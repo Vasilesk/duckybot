@@ -10,9 +10,6 @@ __all__ = ('Duckybot',)
 
 from .system import sns, dbms, existent, files
 
-# import importlib
-# importlib.import_module('configparsing', '.system')
-
 class Duckybot:
     def __init__(self):
         """
@@ -26,31 +23,39 @@ class Duckybot:
         """
         Establish db connection.
 
-        :param dbms_name: Database Management System name (see system.dbms.available)
+        :param dbms_name: Database Management System name (see `system.dbms.available`)
         :param dict_config: dictionary containing data for connection
         """
 
+        self.dbms = dbms.Dbms(dbms_name, dict_config)
+
     def install(self):
         """
-        Install duckybot scheme into db.
+        Install Duckybot scheme into db.
         Should be used only once.
         Requires db connection to be established (`see self.connect_db()`).
         """
 
     def uninstall(self):
         """
-        Drop duckybot scheme in db.
+        Drop Duckybot scheme in db.
         Requires db connection to be established (`see self.connect_db()`).
         """
 
-    def create_new(self, codename, sns_name):
+    def create_new(self, codename, dict_create):
         """
         Create a new bot record in db.
         To operate this bot after creation one should call `self.operate_existent()` method.
         Requires db connection to be established (`see self.connect_db()`).
 
         :param codename: new bot codename
-        :param sns_name: new bot social networking service name (see system.sns.available)
+        :param dict_create: dictionary with info to create;
+            possible keys:
+            `sns` - new bot social networking service name (see system.sns.available)
+            `login` - account login
+            `password` - account password
+            `access_key` - auth access key
+            `access_secret` - auth access secret
         """
         sns.Twitter()
 
@@ -62,21 +67,28 @@ class Duckybot:
         :param codename: bot codename
         """
 
+    def update_existent(self, codename, dict_update):
+        """
+        Update existent bot data  in db.
+        Requires existent bot codename to be established (`see self.operate_existent()`).
+
+        :param codename: bot codename
+        :param dict_update: dictionary with info to update;
+            possible keys:
+            `sns` - new bot social networking service name (see system.sns.available)
+            `login` - account login
+            `password` - account password
+            `access_key` - auth access key
+            `access_secret` - auth access secret
+        """
+
     def operate_existent(self, codename, auto_delay=False):
         """
         Operate bot that exists in db.
         Requires db connection to be established (`see self.connect_db()`).
-        Makes `self.bot` methods available for usage
+        Makes `self.bot` methods available for usage.
 
         :param codename: existent bot codename
         :param auto_delay: if True the bot will sleep to prevent sns api limiting errors
         """
-        self.bot = existent.Existent(codename=codename)
-
-    def update_existent(self, dict_update):
-        """
-        Update existent bot info.
-        Requires existent bot codename to be established (`see self.operate_existent()`).
-
-        :param dict_update: dictionary with info to update
-        """
+        self.bot = existent.Existent(codename=codename, auto_delay=auto_delay)

@@ -33,4 +33,4 @@ class Existent:
         :param last: if unfollow the last user expired
         :param group: group of the user to unfollow (if specified)
         """
-        print('user followed')
+        print('user unfollowed')
