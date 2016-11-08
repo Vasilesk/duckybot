@@ -36,11 +36,15 @@ class Duckybot:
         Requires db connection to be established (`see self.connect_db()`).
         """
 
+        self.dbms.init_scheme()
+
     def uninstall(self):
         """
         Drop Duckybot scheme in db.
         Requires db connection to be established (`see self.connect_db()`).
         """
+
+        self.dbms.drop_scheme()
 
     def create_new(self, codename, dict_create):
         """
