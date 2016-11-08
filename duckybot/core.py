@@ -46,7 +46,7 @@ class Duckybot:
 
         self.dbms.drop_scheme()
 
-    def create_new(self, codename, dict_create):
+    def create_new(self, codename, dict_create={}):
         """
         Create a new bot record in db.
         To operate this bot after creation one should call `self.operate_existent()` method.
@@ -64,14 +64,6 @@ class Duckybot:
 
         self.dbms.create_bot(codename, dict_create)
 
-    def delete_existent(self, codename):
-        """
-        Delete the bot from db.
-        Requires db connection to be established (`see self.connect_db()`).
-
-        :param codename: bot codename
-        """
-
     def update_existent(self, codename, dict_update):
         """
         Update existent bot data  in db.
@@ -86,6 +78,18 @@ class Duckybot:
             `access_key` - auth access key
             `access_secret` - auth access secret
         """
+
+        self.dbms.update_bot(codename, dict_update)
+
+    def delete_existent(self, codename):
+        """
+        Delete the bot from db.
+        Requires db connection to be established (`see self.connect_db()`).
+
+        :param codename: bot codename
+        """
+
+        self.dbms.delete_bot(codename)
 
     def operate_existent(self, codename, auto_delay=False):
         """

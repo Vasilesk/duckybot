@@ -64,12 +64,37 @@ class Dbms_base:
 
     drop_table_posts = "DROP TABLE " + table_posts + ";"
 
-    def get_insert_query(self, table_name, dict_data):
-        l = [(c, v) for c, v in dict_data.items()]
-        columns = ','.join([t[0] for t in l])
-        values = tuple([t[1] for t in l])
+    # virtual methods below
 
-        return 'INSERT INTO {0} ({1}) VALUES ({2})'.format(table_name, columns, values)
+    def init_scheme(self):
+        """
+        Install Duckybot scheme into db.
+        """
+        raise NotImplementedError()
+
+    def drop_scheme(self):
+        """
+        Drop Duckybot scheme in db.
+        """
+        raise NotImplementedError()
+
+    def create_bot(self, codename, dict_config):
+        """
+        Create new bot record in db.
+        """
+        raise NotImplementedError()
+
+    def update_bot(self, codename, dict_config):
+        """
+        Update bot record in db.
+        """
+        raise NotImplementedError()
+
+    def delete_bot(self, codename):
+        """
+        Delete bot record from db.
+        """
+        raise NotImplementedError()
 
 class Postgres (Dbms_base):
     def __init__(self, dict_config):
@@ -84,7 +109,7 @@ class Postgres (Dbms_base):
 
     def init_scheme(self):
         """
-        Install Duckybot scheme into db.
+        Postgres implementation of Dbms_base method.
         """
 
         cursor = self.conn.cursor()
@@ -100,7 +125,7 @@ class Postgres (Dbms_base):
 
     def drop_scheme(self):
         """
-        Drop Duckybot scheme in db.
+        Postgres implementation of Dbms_base method.
         """
 
         cursor = self.conn.cursor()
@@ -114,14 +139,53 @@ class Postgres (Dbms_base):
 
         return True
 
-    def create_bot(self, codename, dict_create):
+    def create_bot(self, codename, dict_config):
         """
-        Create new bot record in db.
-        TODO: delete id return
+        Postgres implementation of Dbms_base method.
+        """
+
+        dict_config.update({'codename' : codename})
+        cursor = self.conn.cursor()
+
+        keys = dict_config.keys()
+        columns = ','.join(keys)
+        values = ','.join(['%({})s'.format(k) for k in keys])
+
+        insert_query = 'INSERT INTO {0} ({1}) values ({2});'.format(self.table_bots, columns, values)
+        sql_query = cursor.mogrify(insert_query, dict_config)
+
+        cursor.execute(sql_query)
+        cursor.close()
+        self.conn.commit()
+
+    def update_bot(self, codename, dict_config):
+        """
+        Postgres implementation of Dbms_base method.
         """
 
         cursor = self.conn.cursor()
-        sql_query = self.get_insert_query(self.table_bots, dict_config)
+
+        keys = dict_config.keys()
+        columns = ','.join(keys)
+        values = ','.join(['%({})s'.format(k) for k in keys])
+
+        update_query = 'UPDATE {0} SET ({1}) = ({2}) WHERE codename = %(codename)s;'.format(self.table_bots, columns, values)
+
+        dict_config.update({'codename' : codename})
+        sql_query = cursor.mogrify(update_query, dict_config)
+
         cursor.execute(sql_query)
+        cursor.close()
+        self.conn.commit()
+
+    def delete_bot(self, codename):
+        """
+        Postgres implementation of Dbms_base method.
+        """
+
+        cursor = self.conn.cursor()
+        delete_query = 'DELETE FROM {0} WHERE codename = %s;'.format(self.table_bots)
+
+        cursor.execute(delete_query, (codename, ))
         cursor.close()
         self.conn.commit()
