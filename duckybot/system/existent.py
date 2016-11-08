@@ -14,6 +14,7 @@ class Existent:
         Send a random post from db.
         Requires existent bot codename to be established (`see self.operate_existent()`).
         """
+
         print('random post')
 
     def follow_one(self, last=True, group=''):
@@ -23,6 +24,7 @@ class Existent:
         :param last: if follow the last user added to db
         :param group: group of the user to follow (if specified)
         """
+
         print('user followed')
 
     def unfollow_expired_one(self, expiration_delta, last=False, group=''):
@@ -33,4 +35,5 @@ class Existent:
         :param last: if unfollow the last user expired
         :param group: group of the user to unfollow (if specified)
         """
+
         print('user unfollowed')

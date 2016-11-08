@@ -27,7 +27,7 @@ class Duckybot:
         :param dict_config: dictionary containing data for connection
         """
 
-        self.dbms = dbms.Dbms(dbms_name, dict_config)
+        self.dbms = dbms.get_dbms_instance(dbms_name, dict_config)
 
     def install(self):
         """
@@ -61,7 +61,8 @@ class Duckybot:
             `access_key` - auth access key
             `access_secret` - auth access secret
         """
-        sns.Twitter()
+
+        self.dbms.create_bot(codename, dict_create)
 
     def delete_existent(self, codename):
         """
@@ -95,4 +96,5 @@ class Duckybot:
         :param codename: existent bot codename
         :param auto_delay: if True the bot will sleep to prevent sns api limiting errors
         """
+
         self.bot = existent.Existent(codename=codename, auto_delay=auto_delay)
