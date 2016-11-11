@@ -6,16 +6,19 @@ Existent bot operation class
 """
 
 class Existent:
-    def __init__(self, codename, auto_delay):
-        print(codename)
+    def __init__(self, codename, dbms, sns):
+        self.codename = codename
+        self.dbms = dbms
+        self.sns = sns
 
     def send_random_post(self):
         """
         Send a random post from db.
-        Requires existent bot codename to be established (`see self.operate_existent()`).
         """
 
-        print('random post')
+        # TODO: get `text` from db using method of `self.dbms`
+        text = 'random text'
+        self.sns.send_text_post(text)
 
     def follow_one(self, last=True, group=''):
         """

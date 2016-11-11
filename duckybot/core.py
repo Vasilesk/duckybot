@@ -101,4 +101,10 @@ class Duckybot:
         :param auto_delay: if True the bot will sleep to prevent sns api limiting errors
         """
 
-        self.bot = existent.Existent(codename=codename, auto_delay=auto_delay)
+        bot_data = self.dbms.get_bot(codename)
+        if not bot_data:
+            raise ValueError('no bot with codename="{0}"'.format(codename))
+        sns_name = bot_data.pop('sns')
+        self.sns = sns.get_sns_instance(sns_name, bot_data, auto_delay)
+
+        self.bot = existent.Existent(codename, self.dbms, self.sns)

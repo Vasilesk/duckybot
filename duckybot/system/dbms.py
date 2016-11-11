@@ -23,11 +23,11 @@ def get_dbms_instance(dbms_name, dict_config):
     if dbms_name in available:
         return globals()[dbms_name.capitalize()](dict_config)
     else:
-        raise ValueError("dbms_name param has invalid value (see `system.dbms.available`)")
+        raise ValueError("dbms_name param has invalid value (see `duckybot.system.dbms.available`)")
 
 class Dbms_base:
     """
-    Base dbms class
+    Base dbms class.
     """
 
     table_bots = 'ducky_bots'
@@ -40,6 +40,8 @@ class Dbms_base:
                                 sns text,
                                 login text,
                                 password text,
+                                consumer_key text,
+                                consumer_secret text,
                                 access_key text,
                                 access_secret text);"""
 
@@ -93,6 +95,12 @@ class Dbms_base:
     def delete_bot(self, codename):
         """
         Delete bot record from db.
+        """
+        raise NotImplementedError()
+
+    def get_bot(self, codename):
+        """
+        Get bot record from db.
         """
         raise NotImplementedError()
 
@@ -169,7 +177,7 @@ class Postgres (Dbms_base):
         columns = ','.join(keys)
         values = ','.join(['%({})s'.format(k) for k in keys])
 
-        update_query = 'UPDATE {0} SET ({1}) = ({2}) WHERE codename = %(codename)s;'.format(self.table_bots, columns, values)
+        update_query = 'UPDATE {0} SET ({1})=({2}) WHERE codename=%(codename)s;'.format(self.table_bots, columns, values)
 
         dict_config.update({'codename' : codename})
         sql_query = cursor.mogrify(update_query, dict_config)
@@ -189,3 +197,34 @@ class Postgres (Dbms_base):
         cursor.execute(delete_query, (codename, ))
         cursor.close()
         self.conn.commit()
+
+    def get_bot(self, codename):
+        """
+        Postgres implementation of Dbms_base method.
+        """
+
+        cursor = self.conn.cursor()
+        sql_query = """SELECT
+                            sns,
+                            login,
+                            password,
+                            consumer_key,
+                            consumer_secret,
+                            access_key,
+                            access_secret
+                        FROM """ + self.table_bots + """ WHERE codename = %s;"""
+        cursor.execute(sql_query, (codename, ))
+        fetched = cursor.fetchone()
+        cursor.close()
+        if fetched:
+            return {
+            'sns': fetched[0],
+            'login': fetched[1],
+            'password': fetched[2],
+            'consumer_key': fetched[3],
+            'consumer_secret': fetched[4],
+            'access_key': fetched[5],
+            'access_secret': fetched[6]
+            }
+        else:
+            return False
