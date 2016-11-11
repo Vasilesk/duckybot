@@ -16,8 +16,7 @@ class Existent:
         Send a random post from db.
         """
 
-        # TODO: get `text` from db using method of `self.dbms`
-        text = 'random text'
+        text = self.dbms.fetch_rand_max_prior_post(self.codename)
         self.sns.send_text_post(text)
 
     def follow_one(self, last=True, group=''):

@@ -104,6 +104,12 @@ class Dbms_base:
         """
         raise NotImplementedError()
 
+    def fetch_rand_max_prior_post(self, codename):
+        """
+        Get random max priority post of `codename` bot decreasing the priority.
+        """
+        raise NotImplementedError()
+
 class Postgres (Dbms_base):
     def __init__(self, dict_config):
         """
@@ -228,3 +234,41 @@ class Postgres (Dbms_base):
             }
         else:
             return False
+
+    def fetch_rand_max_prior_post(self, codename):
+        """
+        Postgres implementation of Dbms_base method.
+        """
+
+        cursor = self.conn.cursor()
+
+        sql_query = """SELECT posts.id, posts.post, max_prior, posts.bot_id
+                        from ducky_posts posts
+                        inner join
+                        (SELECT bot_id, MAX(priority) as max_prior
+                                        FROM (SELECT
+                                                            ducky_posts.id,
+                                                            ducky_posts.bot_id,
+                                                            ducky_posts.priority
+                                                        FROM
+                                                            ducky_posts
+                                                            INNER JOIN
+                                                            ducky_bots
+                                                                ON ducky_posts.bot_id=ducky_bots.id
+                                                        WHERE ducky_bots.codename = %s) max_priors
+                                        GROUP BY bot_id) a
+                        on a.bot_id = posts.bot_id and a.max_prior = priority ORDER BY RANDOM() LIMIT 1;"""
+
+        cursor.execute(sql_query, (codename, ))
+        fetched = cursor.fetchone()
+
+        post_id = fetched[0]
+        post_text = fetched[1]
+
+        sql_query = "UPDATE ducky_posts SET priority = priority - 1 WHERE id=%s"
+        cursor.execute(sql_query, (post_id, ))
+
+        cursor.close()
+        self.conn.commit()
+
+        return post_text
